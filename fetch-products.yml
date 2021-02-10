@@ -29,6 +29,10 @@ resources:
   source:
     private_key: ((config-repo-key.private_key))
     uri: ((config-repo-uri))            
+- name: daily
+  type: time
+  source:
+    interval: 24h
 jobs:
 - name: fetch-opsman
   plan:
@@ -38,14 +42,32 @@ jobs:
     - get: platform-automation-image
       params: { unpack: true }
     - get: configuration
+    - get: daily
+      trigger: true
+
+  - task: interpolate-env-creds
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/credhub-interpolate.yml
+    params:
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: ((credhub-secret))
+      CREDHUB_SERVER: ((credhub-server))
+      CREDHUB_CA_CERT: ((credhub-ca-cert.certificate))
+      PREFIX: '/concourse/main'
+      INTERPOLATION_PATHS: download-product
+      SKIP_MISSING: false
+    input_mapping:
+      files: configuration
+    output_mapping:
+      interpolated-files: interpolated-configs
   - task: download-opsman-product
     image: platform-automation-image
     file: platform-automation-tasks/tasks/download-product.yml
     params:
       CONFIG_FILE: download-product/opsman.yml
     input_mapping:
-      config: configuration
+#      config: configuration
+      config: interpolated-configs
   - put: opsman-product
     params:
       file: downloaded-product/*
-
