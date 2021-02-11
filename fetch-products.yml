@@ -7,7 +7,6 @@ resources:
     access_key_id: ((s3.access_key))
     secret_access_key: ((s3.secret_key))
     regexp: platform-automation-tasks-(.*).zip
-
 - name: platform-automation-image
   type: s3
   source:
@@ -40,7 +39,6 @@ resources:
     access_key_id: ((s3.access_key))
     secret_access_key: ((s3.secret_key))
     regexp: healthwatch-stemcell/\[stemcells-ubuntu-xenial,(.*)\]bosh-stemcell-.*-vsphere-esxi-ubuntu-xenial-go_agent.tgz
-
 - name: configuration
   type: git
   source:
@@ -86,9 +84,9 @@ jobs:
   - put: opsman-product
     params:
       file: downloaded-product/*
-- name: health-watch
+- name: fetch-health-watch
   plan:
-    - in_parallel:
+  - in_parallel:
     - get: platform-automation-tasks
       params: { unpack: true }
     - get: platform-automation-image
@@ -115,13 +113,12 @@ jobs:
     image: platform-automation-image
     file: platform-automation-tasks/tasks/download-product.yml
     params:
-      CONFIG_FILE: download-product/healt-watch.yml
+      CONFIG_FILE: download-product/health-watch.yml
     input_mapping:
       config: interpolated-configs
-    - put: healthwatch-product
-      params:
-        file: downloaded-product/*
-    - put: healthwatch-stemcell
-      params:
+  - put: healthwatch-product
+    params:
+      file: downloaded-product/*
+  - put: healthwatch-stemcell
+    params:
         file: downloaded-stemcell/*
-
