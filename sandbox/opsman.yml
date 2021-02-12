@@ -2,7 +2,7 @@
 opsman-configuration:
   vsphere:
     vcenter:
-      url: vcsa-01.haas-${HAAS_NUM}.pez.pivotal.io
+      url: vcsa-01.haas-257.pez.pivotal.io
       username: Administrator@vsphere.local
       password: ((vcenter_password))
       datastore: LUN01
